@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>To-Do List</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-box" id="signup-box">
+            <h2>Register</h2>
+            <input type="text" id="reg_username" placeholder="Username" required><br>
+            <input type="email" id="reg_email" placeholder="Email" required><br>
+            <input type="password" id="reg_password" placeholder="Password" required><br>
+            <button type="button" id="signupButton" class="form-btn active">Register</button>
+            <button type="button" id="toLoginButton" class="form-btn inactive">Login</button>
+        </div>
+        
+        <div class="form-box" id="login-box" style="display:none;">
+            <h2>Login</h2>
+            <input type="text" id="login_username" placeholder="Username" required><br>
+            <input type="password" id="login_password" placeholder="Password" required><br>
+            <button type="button" id="loginButton" class="form-btn active">Login</button>
+            <button type="button" id="toSignupButton" class="form-btn inactive">Register</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
