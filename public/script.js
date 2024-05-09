@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
         alert(data.message);
         if (data.user_id) {
           console.log("Logged in user ID:", data.user_id);
+          window.location.href = 'homePage.html';
         }
       })
       .catch((error) => console.error("Error:", error));
@@ -82,3 +83,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
   switchForm(false); 
 });
+
