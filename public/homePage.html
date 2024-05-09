@@ -4,18 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task List Manager</title>
+    <style>
+        #error-message {
+            color: red;
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
     <h1>Task List Manager</h1>
     <div id="error-message"></div>
+
     <!-- Form to create a new task list -->
-    <input type="text" id="createTitle" placeholder="Enter list title">
-    <button onclick="createTaskList()">Create List</button>
+    <form onsubmit="createTaskList(); return false;">
+        <input type="text" id="createTitle" placeholder="Enter list title">
+        <button type="button" onclick="createTaskList()">Create List</button>
+    </form>
 
     <table id="taskListTable">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Title</th>
                 <th>Actions</th>
             </tr>
