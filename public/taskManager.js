@@ -69,7 +69,11 @@ function loadTaskLists() {
         if (data.task_lists && Array.isArray(data.task_lists)) {
             data.task_lists.forEach(list => {
                 let row = taskListTable.insertRow();
-                row.insertCell(0).innerText = list.Title;
+                let titleCell = row.insertCell(0);
+                let link = document.createElement('a');
+                link.href = `taskPage.html?list_id=${list.List_ID}&title=${encodeURIComponent(list.Title)}`;
+                link.textContent = list.Title;
+                titleCell.appendChild(link);
                 let actionsCell = row.insertCell(1);
                 actionsCell.appendChild(createButton("Update", () => updateTaskList(list.List_ID)));
                 actionsCell.appendChild(createButton("Delete", () => deleteTaskList(list.List_ID)));

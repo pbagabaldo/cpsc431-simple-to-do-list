@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+        #error-message {
+            color: red;
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="taskListTitle"></h1>
+    <div id="error-message"></div>
+
+    <!-- Form to create a new task -->
+    <form onsubmit="createTask(); return false;">
+        <input type="text" id="taskName" placeholder="Enter task name">
+        <input type="text" id="taskDescription" placeholder="Enter task description">
+        <button type="button" onclick="createTask()">Create Task</button>
+    </form>
+
+    <table id="taskTable">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Tasks will be loaded here -->
+        </tbody>
+    </table>
+
+    <!-- Scripts -->
+    <script src="taskPageManager.js"></script>
+</body>
+</html>
