@@ -8,23 +8,25 @@
 <body>
     <div class="form-container">
         <div class="form-box" id="signup-box">
-            <h2>To Do</h2>
-            <input type="text" id="reg_username" placeholder="Username" required><br>
+            <h2>Create an account</h2>
+            <span id="error-message" class="error-message"></span>
+            <input type="user" id="reg_username" placeholder="Username" required><br>
             <input type="email" id="reg_email" placeholder="Email" required><br>
             <input type="password" id="reg_password" placeholder="Password" required><br>
             <button type="button" id="signupButton" class="form-btn active">Register</button>
-            <button type="button" id="toLoginButton" class="form-btn inactive">Login</button>
+            <p class="login-text">Already have an account? <a href="#" id="toLoginButton">Login</a></p>
         </div>
         
         <div class="form-box" id="login-box" style="display:none;">
-            <h2>To Do</h2>
-            <input type="text" id="login_username" placeholder="Username" required><br>
+            <h2>Welcome back</h2>
+            <input type="user" id="login_username" placeholder="Username" required><br>
             <input type="password" id="login_password" placeholder="Password" required><br>
             <button type="button" id="loginButton" class="form-btn active">Login</button>
-            <button type="button" id="toSignupButton" class="form-btn inactive">Register</button>
+            <p class="signup-text">Don't have an account? <a href="#" id="toSignupButton">Sign Up</a></p>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
+
+
