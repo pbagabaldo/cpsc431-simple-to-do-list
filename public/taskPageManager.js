@@ -273,3 +273,17 @@ function createButton(text, onclickFunction) {
   button.onclick = onclickFunction;
   return button;
 }
+
+function logOut() {
+  localStorage.removeItem('authToken');  
+  window.location.href = 'index.html'; 
+}
+
+function goBack() {
+  if (window.history.length > 1) {
+      window.history.back();
+  } else {
+      window.location.href = 'index.html'; // Provide a fallback home page or directory
+  }
+}
+

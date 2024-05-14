@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Manager</title>
     <link rel="stylesheet" href="taskPage.css">
 </head>
+
 <body>
-    <h1 id="taskListTitle"></h1>
+    <!-- Header section -->
+    <div class="header">
+        <h1 id="taskListTitle"></h1>
+        <button id="backButton" onclick="goBack()">Back</button>
+        <button id="logoutButton" onclick="logOut()">Log Out</button>
+    </div>
+
     <div id="error-message"></div>
 
     <!-- Form to create a new task -->
@@ -34,4 +42,5 @@
     <!-- Scripts -->
     <script src="taskPageManager.js"></script>
 </body>
+
 </html>

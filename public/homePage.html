@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task List Manager</title>
     <link rel="stylesheet" href="homePage.css">
 </head>
+
 <body>
     <h1>Task List Manager</h1>
+    <!-- Top bar container -->
+    <div class="top-bar">
+        <button id="logoutButton" onclick="logOut()">Log Out</button>
+    </div>
+
+
     <div id="error-message"></div>
 
     <!-- Form to create a new task list -->
@@ -31,4 +39,5 @@
     <!-- Scripts -->
     <script src="taskManager.js"></script>
 </body>
+
 </html>

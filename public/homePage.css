@@ -10,6 +10,10 @@ body {
 
 h1 {
     color: #333;
+    position: absolute; /* Positions the header absolutely relative to its first positioned ancestor */
+    left: 50%; /* Centers the title */
+    transform: translateX(-50%); /* Ensures it's perfectly centered by shifting it left by half its width */
+    top: 10px; /* Spacing from the top */
 }
 
 #error-message {
@@ -30,17 +34,17 @@ input[type="text"] {
 }
 
 table td a {
-    color: #337ab7; /* Change color for better visibility */
-    text-decoration: none; /* Remove underline by default */
+    color: #337ab7;
+    text-decoration: none;
     font-weight: bold;
-    display: block; /* Makes the link fill the cell for easier clicking */
-    padding: 8px; /* Adds padding to make it easier to click */
-    border-radius: 4px; /* Optional: Adds rounded corners */
+    display: block;
+    padding: 8px;
+    border-radius: 4px;
 }
 
 table td a:hover {
-    background-color: #e8f4fc; /* Light blue background on hover */
-    cursor: pointer; /* Changes the cursor to a pointer */
+    background-color: #e8f4fc;
+    cursor: pointer;
 }
 
 button {
@@ -79,4 +83,27 @@ th {
 
 tbody tr:nth-child(odd) {
     background-color: #f9f9f9;
+}
+
+form {
+    margin: 20px auto; 
+    width: fit-content; 
+}
+
+.top-bar {
+    display: flex;
+    justify-content: flex-end; 
+    padding: 10px 20px;
+    width: 100%; 
+    background-color: #f4f4f4; 
+}
+
+#logoutButton {
+    padding: 8px 16px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
 }
