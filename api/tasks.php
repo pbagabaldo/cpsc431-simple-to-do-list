@@ -1,104 +1,151 @@
 <?php
-include_once '../config/database.php'; 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-header("Content-Type: application/json; charset=UTF-8");
+require_once '../config/database.php';
 
-$data = json_decode(file_get_contents("php://input"));
-$operation = $data->operation ?? $_GET['operation'] ?? '';
+// Function to fetch all tasks with sorting
+function fetchAllTasks($conn, $listId, $sortOption)
+{
+    $sortField = 'CreatedDate'; // Updated column name
+    $sortOrder = 'ASC';
 
-// Utility function to send JSON responses
-function sendJson($status, $message, $additional = []) {
-    http_response_code($status);
-    echo json_encode(array_merge(["message" => $message], $additional));
+    switch ($sortOption) {
+        case 'created-asc':
+            $sortField = 'CreatedDate';
+            $sortOrder = 'ASC';
+            break;
+        case 'created-desc':
+            $sortField = 'CreatedDate';
+            $sortOrder = 'DESC';
+            break;
+        case 'checked':
+            $sortField = 'Status';
+            $sortOrder = 'DESC';
+            break;
+        case 'unchecked':
+            $sortField = 'Status';
+            $sortOrder = 'ASC';
+            break;
+    }
+
+    $stmt = $conn->prepare("SELECT * FROM Tasks WHERE List_ID = ? ORDER BY $sortField $sortOrder");
+    $stmt->execute([$listId]);
+    return $stmt->fetchAll();
 }
 
-// Function to create a new task
-function createTask($data, $conn) {
-    if (!empty($data->list_id) && !empty($data->name)) {
-        $query = "INSERT INTO Tasks (List_ID, Name, Description, Status) VALUES (?, ?, ?, ?)";
-        $status = isset($data->status) ? $data->status : 0;
-        $stmt = $conn->prepare($query);
-        $stmt->execute([$data->list_id, $data->name, $data->description ?? '', $status]);
-        if ($stmt->rowCount()) {
-            sendJson(201, "Task created successfully.", ["Task_ID" => $conn->lastInsertId()]);
-        } else {
-            sendJson(503, "Unable to create task.");
-        }
-    } else {
-        sendJson(400, "Data is incomplete.");
-    }
+// Function to create a task
+function createTask($conn, $listId, $name, $description)
+{
+    $stmt = $conn->prepare("INSERT INTO Tasks (List_ID, Name, Description, CreatedDate) VALUES (?, ?, ?, NOW())"); // Updated column name
+    $stmt->execute([$listId, $name, $description]);
 }
 
 // Function to update a task
-function updateTask($data, $conn) {
-    if (!empty($data->task_id) && !empty($data->name)) {
-        $query = "UPDATE Tasks SET Name = ?, Description = ?, Status = ? WHERE Task_ID = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->execute([$data->name, $data->description ?? '', $data->status ?? 0, $data->task_id]);
-        if ($stmt->rowCount()) {
-            sendJson(200, "Task updated successfully.");
-        } else {
-            sendJson(404, "No task found with the given ID.");
-        }
-    } else {
-        sendJson(400, "Data is incomplete or missing Task ID.");
-    }
-}
-
-// Function to update task status
-function updateTaskStatus($data, $conn) {
-    if (!empty($data->task_id) && isset($data->status)) {
-        $query = "UPDATE Tasks SET Status = ? WHERE Task_ID = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->execute([$data->status, $data->task_id]);
-        if ($stmt->rowCount()) {
-            sendJson(200, "Task status updated successfully.");
-        } else {
-            sendJson(404, "No task found with the given ID.");
-        }
-    } else {
-        sendJson(400, "Data is incomplete or missing Task ID/Status.");
-    }
+function updateTask($conn, $taskId, $name, $description)
+{
+    $stmt = $conn->prepare("UPDATE Tasks SET Name = ?, Description = ? WHERE Task_ID = ?");
+    $stmt->execute([$name, $description, $taskId]);
 }
 
 // Function to delete a task
-function deleteTask($data, $conn) {
-    if (!empty($data->task_id)) {
-        $query = "DELETE FROM Tasks WHERE Task_ID = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->execute([$data->task_id]);
-        if ($stmt->rowCount()) {
-            sendJson(200, "Task deleted successfully.");
-        } else {
-            sendJson(404, "No task found with the given ID.");
-        }
-    } else {
-        sendJson(400, "Task ID is missing.");
-    }
+function deleteTask($conn, $taskId)
+{
+    $stmt = $conn->prepare("DELETE FROM Tasks WHERE Task_ID = ?");
+    $stmt->execute([$taskId]);
 }
 
-// Function to fetch all tasks for a specific task list
-function fetchAllTasks($data, $conn) {
-    if (!empty($data->list_id)) {
-        $query = "SELECT * FROM Tasks WHERE List_ID = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->execute([$data->list_id]);
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        if ($results) {
-            sendJson(200, "Tasks fetched successfully.", ["tasks" => $results]);
-        } else {
-            sendJson(404, "No tasks found for the given list ID.");
-        }
-    } else {
-        sendJson(400, "List ID is missing.");
-    }
+// Function to update task status
+function updateTaskStatus($conn, $taskId, $status)
+{
+    $stmt = $conn->prepare("UPDATE Tasks SET Status = ? WHERE Task_ID = ?");
+    $stmt->execute([$status, $taskId]);
 }
 
-// Main request handling
-if (function_exists($operation)) {
-    $operation($data, $conn);
+// Process the request
+$input = json_decode(file_get_contents('php://input'), true);
+
+if (isset($input['operation'])) {
+    $operation = $input['operation'];
+    switch ($operation) {
+        case 'fetchAllTasks':
+            if (!isset($input['list_id']) || !isset($input['sort_option'])) {
+                echo json_encode(['message' => 'List ID and sort option are required']);
+                break;
+            }
+            $listId = $input['list_id'];
+            $sortOption = $input['sort_option'];
+            $tasks = fetchAllTasks($conn, $listId, $sortOption);
+            echo json_encode(['tasks' => $tasks]);
+            break;
+
+        case 'createTask':
+            if (!isset($input['list_id']) || !isset($input['name'])) {
+                echo json_encode(['message' => 'List ID and name are required']);
+                break;
+            }
+            $listId = $input['list_id'];
+            $name = $input['name'];
+            $description = $input['description'] ?? '';
+            try {
+                createTask($conn, $listId, $name, $description);
+                echo json_encode(['message' => 'Task created successfully.']);
+            } catch (Exception $e) {
+                echo json_encode(['message' => 'Failed to create task: ' . $e->getMessage()]);
+            }
+            break;
+
+        case 'updateTask':
+            if (!isset($input['task_id']) || !isset($input['name']) || !isset($input['description'])) {
+                echo json_encode(['message' => 'Task ID, name, and description are required']);
+                break;
+            }
+            $taskId = $input['task_id'];
+            $name = $input['name'];
+            $description = $input['description'];
+            try {
+                updateTask($conn, $taskId, $name, $description);
+                echo json_encode(['message' => 'Task updated successfully.']);
+            } catch (Exception $e) {
+                echo json_encode(['message' => 'Failed to update task: ' . $e->getMessage()]);
+            }
+            break;
+
+        case 'deleteTask':
+            if (!isset($input['task_id'])) {
+                echo json_encode(['message' => 'Task ID is required']);
+                break;
+            }
+            $taskId = $input['task_id'];
+            try {
+                deleteTask($conn, $taskId);
+                echo json_encode(['message' => 'Task deleted successfully.']);
+            } catch (Exception $e) {
+                echo json_encode(['message' => 'Failed to delete task: ' . $e->getMessage()]);
+            }
+            break;
+
+        case 'updateTaskStatus':
+            if (!isset($input['task_id']) || !isset($input['status'])) {
+                echo json_encode(['message' => 'Task ID and status are required']);
+                break;
+            }
+            $taskId = $input['task_id'];
+            $status = $input['status'];
+            try {
+                updateTaskStatus($conn, $taskId, $status);
+                echo json_encode(['message' => 'Task status updated successfully.']);
+            } catch (Exception $e) {
+                echo json_encode(['message' => 'Failed to update task status: ' . $e->getMessage()]);
+            }
+            break;
+
+        default:
+            echo json_encode(['message' => 'Invalid operation']);
+            break;
+    }
 } else {
-    http_response_code(400);
-    echo json_encode(["message" => "Invalid operation requested."]);
+    echo json_encode(['message' => 'No operation specified']);
 }
+?>
