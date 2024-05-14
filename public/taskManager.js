@@ -36,19 +36,25 @@ function createTaskList() {
     fetch('../api/taskLists.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ operation: 'createTaskList', title: title })
+        body: JSON.stringify({ operation: 'createTaskList', title: title, user_id: userId })
     })
-        .then(response => response.json())
-        .then(data => {
+    .then(response => response.text()) // Read as text for debugging
+    .then(text => {
+        try {
+            const data = JSON.parse(text);
             alert(data.message);
             if (data.message === "Task list created successfully.") {
                 loadTaskLists(); // Reload the list
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
+        } catch (err) {
+            console.error('Failed to parse JSON:', err, text);
             updateErrorMessage('Failed to create task list');
-        });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        updateErrorMessage('Failed to create task list');
+    });
 }
 
 function loadTaskLists() {
@@ -62,35 +68,77 @@ function loadTaskLists() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ operation: 'fetchAllTaskLists' })
     })
-        .then(response => response.json())
-        .then(data => {
-            const taskListTable = document.getElementById('taskListTable').getElementsByTagName('tbody')[0];
-            taskListTable.innerHTML = ''; // Clear previous entries
-            if (data.task_lists && Array.isArray(data.task_lists)) {
-                data.task_lists.forEach(list => {
-                    let row = taskListTable.insertRow();
-                    let titleCell = row.insertCell(0);
-                    let link = document.createElement('a');
-                    link.href = `taskPage.html?list_id=${list.List_ID}&title=${encodeURIComponent(list.Title)}`;
-                    link.textContent = list.Title;
-                    titleCell.appendChild(link);
-
-                    let actionsCell = row.insertCell(1);
-                    let actionDiv = document.createElement('div');
-                    actionDiv.className = 'action-buttons';
-                    actionDiv.appendChild(createButton("Update", () => updateTaskList(list.List_ID)));
-                    actionDiv.appendChild(createButton("Delete", () => deleteTaskList(list.List_ID)));
-                    actionsCell.appendChild(actionDiv);
-                });
+    .then(response => response.text())
+    .then(text => {
+        try {
+            const data = JSON.parse(text);
+            if (data.task_lists) {
+                displayTaskLists(data.task_lists);
             } else {
                 console.log('No task lists found or invalid data:', data.message);
                 updateErrorMessage(data.message || 'No task lists found');
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
+        } catch (err) {
+            console.error('Failed to parse JSON:', err, text);
             updateErrorMessage('Failed to load task lists');
-        });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        updateErrorMessage('Failed to load task lists');
+    });
+}
+
+function displayTaskLists(taskLists) {
+    const taskListTable = document.getElementById('taskListTable').getElementsByTagName('tbody')[0];
+    taskListTable.innerHTML = ''; // Clear previous entries
+
+    taskLists.forEach(list => {
+        let row = taskListTable.insertRow();
+        let titleCell = row.insertCell(0);
+        let link = document.createElement('a');
+        link.href = `taskPage.html?list_id=${list.List_ID}&title=${encodeURIComponent(list.Title)}`;
+        link.textContent = list.Title;
+        titleCell.appendChild(link);
+
+        let actionsCell = row.insertCell(1);
+        let actionDiv = document.createElement('div');
+        actionDiv.className = 'action-buttons';
+        actionDiv.appendChild(createButton("Update", () => updateTaskList(list.List_ID)));
+        actionDiv.appendChild(createButton("Delete", () => deleteTaskList(list.List_ID)));
+        actionsCell.appendChild(actionDiv);
+    });
+}
+
+function sortLists() {
+    const sorter = document.getElementById('listSorter').value;
+    let [sortField, sortOrder] = sorter.split('-');
+
+    if (sortField === 'name') {
+        sortField = 'Title';
+    } else if (sortField === 'created') {
+        sortField = 'Created';
+    }
+
+    fetch('../api/taskLists.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ operation: 'fetchAllTaskLists', sortField: sortField, sortOrder: sortOrder.toUpperCase() })
+    })
+    .then(response => response.text())
+    .then(text => {
+        try {
+            const data = JSON.parse(text);
+            if (data.task_lists) {
+                displayTaskLists(data.task_lists);
+            } else {
+                console.log('No task lists found or invalid data:', data.message);
+            }
+        } catch (err) {
+            console.error('Failed to parse JSON:', err, text);
+        }
+    })
+    .catch(error => console.error('Error fetching sorted lists:', error));
 }
 
 function updateTaskList(listId) {
@@ -122,17 +170,23 @@ function deleteTaskList(listId) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ operation: 'deleteTaskList', list_id: listId })
         })
-            .then(response => response.json())
-            .then(data => {
+        .then(response => response.text()) // Read as text for debugging
+        .then(text => {
+            try {
+                const data = JSON.parse(text);
                 alert(data.message);
                 if (data.message === "Task list deleted successfully.") {
                     loadTaskLists(); // Reload the list
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+            } catch (err) {
+                console.error('Failed to parse JSON:', err, text);
                 updateErrorMessage('Failed to delete task list');
-            });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            updateErrorMessage('Failed to delete task list');
+        });
     }
 }
 
@@ -153,9 +207,6 @@ function createButton(text, onclickFunction) {
 }
 
 function logOut() {
-    // Assuming authentication token is stored in localStorage
-    localStorage.removeItem('authToken');  // Adjust key according to your storage
+    localStorage.removeItem('authToken');
     window.location.href = 'index.html'; // Redirect to the login page
 }
-
-

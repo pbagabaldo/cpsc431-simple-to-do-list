@@ -25,6 +25,12 @@
         <button type="button" onclick="createTask()">Create Task</button>
     </form>
 
+    <select id="taskSorter" onchange="sortTasks()">
+        <option value="checked-asc">Checked First</option>
+        <option value="created-asc">Created Ascending</option>
+        <option value="created-desc">Created Descending</option>
+    </select>
+
     <table id="taskTable">
         <thead>
             <tr>

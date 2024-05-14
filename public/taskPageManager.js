@@ -275,15 +275,29 @@ function createButton(text, onclickFunction) {
 }
 
 function logOut() {
-  localStorage.removeItem('authToken');  
-  window.location.href = 'index.html'; 
+  localStorage.removeItem('authToken');
+  window.location.href = 'index.html';
 }
 
 function goBack() {
   if (window.history.length > 1) {
-      window.history.back();
+    window.history.back();
   } else {
-      window.location.href = 'index.html'; // Provide a fallback home page or directory
+    window.location.href = 'index.html'; // Provide a fallback home page or directory
   }
+}
+
+function sortTasks() {
+  let sortOption = document.getElementById('taskSorter').value;
+  fetchTasks(sortOption);
+}
+
+function fetchTasks(sortOption) {
+  fetch(`api/tasks.php?sort=${sortOption}`)
+    .then(response => response.json())
+    .then(data => {
+      displayTasks(data); // Function that renders tasks on the page
+    })
+    .catch(error => console.error('Error fetching tasks:', error));
 }
 

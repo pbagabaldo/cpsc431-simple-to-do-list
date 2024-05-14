@@ -1,96 +1,105 @@
 <?php
-session_start();
-include_once '../config/database.php';
 ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-header("Content-Type: application/json; charset=UTF-8");
-header('Access-Control-Allow-Origin: *'); 
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+require_once '../config/database.php';
 
-$data = json_decode(file_get_contents("php://input"), true);
-if (json_last_error() !== JSON_ERROR_NONE) {
-    http_response_code(400);
-    echo json_encode(["message" => "Invalid JSON format"]);
-    exit;
-}
-
-$operation = $data['operation'] ?? '';
-
-// Utility function to send JSON responses
-function sendJson($status, $message, $additional = [])
-{
-    http_response_code($status);
-    echo json_encode(array_merge(["message" => $message], $additional));
-}
-
-// Function to create a new task list
-function createTaskList($data, $conn)
-{
-    if (!empty($data['title'])) {
-        $query = "INSERT INTO TaskLists (User_ID, Title) VALUES (?, ?)";
-        $stmt = $conn->prepare($query);
-        $stmt->execute([$_SESSION['user_id'], $data['title']]);
-        if ($stmt->rowCount()) {
-            sendJson(201, "Task list created successfully.", ["List_ID" => $conn->lastInsertId()]);
-        } else {
-            sendJson(503, "Unable to create task list.");
-        }
-    } else {
-        sendJson(400, "Title is required.");
+// Function to fetch all task lists with sorting
+function fetchAllTaskLists($conn, $sortField = 'Created', $sortOrder = 'ASC') {
+    $validFields = ['Title', 'Created'];
+    if (!in_array($sortField, $validFields)) {
+        $sortField = 'Created';
     }
-}
 
-function deleteTaskList($data, $conn)
-{
-    if (!empty($data['list_id'])) {
-        $query = "DELETE FROM TaskLists WHERE List_ID = ? AND User_ID = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->execute([$data['list_id'], $_SESSION['user_id']]);
-        if ($stmt->rowCount()) {
-            sendJson(200, "Task list deleted successfully.");
-        } else {
-            sendJson(404, "No task list found with the given ID, or you do not have permission to delete it.");
-        }
-    } else {
-        sendJson(400, "List ID is missing.");
+    $validOrders = ['ASC', 'DESC'];
+    if (!in_array($sortOrder, $validOrders)) {
+        $sortOrder = 'ASC';
     }
+
+    $stmt = $conn->prepare("SELECT * FROM TaskLists ORDER BY $sortField $sortOrder");
+    $stmt->execute();
+    return $stmt->fetchAll();
 }
 
-function updateTaskList($data, $conn)
-{
-    if (!empty($data['list_id']) && !empty($data['title'])) {
-        $query = "UPDATE TaskLists SET Title = ? WHERE List_ID = ? AND User_ID = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->execute([$data['title'], $data['list_id'], $_SESSION['user_id']]);
-        if ($stmt->rowCount()) {
-            sendJson(200, "Task list updated successfully.");
-        } else {
-            sendJson(404, "No task list found with the given ID, or you do not have permission to update it.");
-        }
-    } else {
-        sendJson(400, "Data is incomplete or missing List ID.");
+// Function to create a task list
+function createTaskList($conn, $title, $userId) {
+    $stmt = $conn->prepare("INSERT INTO TaskLists (Title, Created, User_ID) VALUES (?, NOW(), ?)");
+    $stmt->execute([$title, $userId]);
+}
+
+// Function to delete tasks by list ID
+function deleteTasksByListId($conn, $listId) {
+    $stmt = $conn->prepare("DELETE FROM Tasks WHERE List_ID = ?");
+    $stmt->execute([$listId]);
+}
+
+// Function to delete a task list
+function deleteTaskList($conn, $listId) {
+    deleteTasksByListId($conn, $listId);
+    $stmt = $conn->prepare("DELETE FROM TaskLists WHERE List_ID = ?");
+    $stmt->execute([$listId]);
+}
+
+// Process the request
+$input = json_decode(file_get_contents('php://input'), true);
+
+if (isset($input['operation'])) {
+    $operation = $input['operation'];
+    switch ($operation) {
+        case 'fetchAllTaskLists':
+            $sortField = $input['sortField'] ?? 'Created';
+            $sortOrder = $input['sortOrder'] ?? 'ASC';
+            $taskLists = fetchAllTaskLists($conn, $sortField, $sortOrder);
+            echo json_encode(['task_lists' => $taskLists]);
+            break;
+
+        case 'createTaskList':
+            if (!isset($input['title']) || !isset($input['user_id'])) {
+                echo json_encode(['message' => 'Title and User ID are required']);
+                break;
+            }
+            $title = $input['title'];
+            $userId = $input['user_id'];
+            try {
+                createTaskList($conn, $title, $userId);
+                echo json_encode(['message' => 'Task list created successfully.']);
+            } catch (Exception $e) {
+                echo json_encode(['message' => 'Failed to create task list: ' . $e->getMessage()]);
+            }
+            break;
+
+        case 'updateTaskList':
+            if (!isset($input['list_id']) || !isset($input['title'])) {
+                echo json_encode(['message' => 'List ID and title are required']);
+                break;
+            }
+            $listId = $input['list_id'];
+            $title = $input['title'];
+            $stmt = $conn->prepare("UPDATE TaskLists SET Title = ? WHERE List_ID = ?");
+            $stmt->execute([$title, $listId]);
+            echo json_encode(['message' => 'Task list updated successfully.']);
+            break;
+
+        case 'deleteTaskList':
+            if (!isset($input['list_id'])) {
+                echo json_encode(['message' => 'List ID is required']);
+                break;
+            }
+            $listId = $input['list_id'];
+            try {
+                deleteTaskList($conn, $listId);
+                echo json_encode(['message' => 'Task list deleted successfully.']);
+            } catch (Exception $e) {
+                echo json_encode(['message' => 'Failed to delete task list: ' . $e->getMessage()]);
+            }
+            break;
+
+        default:
+            echo json_encode(['message' => 'Invalid operation']);
+            break;
     }
-}
-
-function fetchAllTaskLists($data, $conn) {
-    $query = "SELECT List_ID, Title FROM TaskLists WHERE User_ID = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->execute([$_SESSION['user_id']]);
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    if ($results) {
-        sendJson(200, "Task lists fetched successfully.", ["task_lists" => $results]);
-    } else {
-        sendJson(404, "No task lists found.");
-    }
-}
-
-// Main request handling
-if (function_exists($operation)) {
-    $operation($data, $conn);
 } else {
-    http_response_code(400);
-    echo json_encode(["message" => "Invalid operation requested."]);
+    echo json_encode(['message' => 'No operation specified']);
 }
+?>
