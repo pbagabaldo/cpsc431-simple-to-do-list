@@ -3,11 +3,21 @@ document.addEventListener("DOMContentLoaded", function () {
   document
     .getElementById("signupButton")
     .addEventListener("click", function () {
+      var username = document.getElementById("reg_username").value;
+      var email = document.getElementById("reg_email").value;
+      var password = document.getElementById("reg_password").value;
+
+      // Check if any registration field is empty
+      if (!username || !email || !password) {
+        alert("Please fill in all fields.");
+        return; // Stop the function if any field is empty
+      }
+
       var data = {
         operation: "register",
-        username: document.getElementById("reg_username").value,
-        email: document.getElementById("reg_email").value,
-        password: document.getElementById("reg_password").value,
+        username: username,
+        email: email,
+        password: password
       };
 
       fetch("../api/users.php", {
@@ -24,10 +34,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Event listener for the Login button
   document.getElementById("loginButton").addEventListener("click", function () {
+    var username = document.getElementById("login_username").value;
+    var password = document.getElementById("login_password").value;
+
+    // Check if login username or password is empty
+    if (!username || !password) {
+      alert("Please enter both username and password.");
+      return; // Stop the function if any field is empty
+    }
+
     var data = {
       operation: "login",
-      username: document.getElementById("login_username").value,
-      password: document.getElementById("login_password").value,
+      username: username,
+      password: password,
     };
 
     fetch("../api/users.php", {
@@ -81,6 +100,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-  switchForm(false); 
+  switchForm(false);
 });
 

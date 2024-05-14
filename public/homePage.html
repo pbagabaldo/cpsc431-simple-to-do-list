@@ -1,38 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task List Manager</title>
-    <style>
-        #error-message {
-            color: red;
-            margin: 10px 0;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    <link rel="stylesheet" href="homePage.css">
 </head>
+
 <body>
     <h1>Task List Manager</h1>
-    <div id="error-message"></div>
+    <!-- Top bar container -->
+    <div class="top-bar">
+        <button id="logoutButton" onclick="logOut()">Log Out</button>
+    </div>
 
+    <div id="error-message"></div>
     <!-- Form to create a new task list -->
     <form onsubmit="createTaskList(); return false;">
         <input type="text" id="createTitle" placeholder="Enter list title">
         <button type="button" onclick="createTaskList()">Create List</button>
     </form>
+    <select id="listSorter" onchange="sortLists()">
+        <option value="created-asc">Created Ascending</option>
+        <option value="created-desc">Created Descending</option>
+    </select>
 
     <table id="taskListTable">
         <thead>
@@ -49,4 +41,5 @@
     <!-- Scripts -->
     <script src="taskManager.js"></script>
 </body>
+
 </html>

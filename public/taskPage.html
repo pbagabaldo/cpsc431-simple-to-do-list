@@ -1,31 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Manager</title>
-    <style>
-        #error-message {
-            color: red;
-            margin: 10px 0;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    <link rel="stylesheet" href="taskPage.css">
 </head>
+
 <body>
-    <h1 id="taskListTitle"></h1>
+    <!-- Header section -->
+    <div class="header">
+        <h1 id="taskListTitle"></h1>
+        <button id="backButton" onclick="goBack()">Back</button>
+        <button id="logoutButton" onclick="logOut()">Log Out</button>
+    </div>
+
     <div id="error-message"></div>
 
     <!-- Form to create a new task -->
@@ -34,6 +24,14 @@
         <input type="text" id="taskDescription" placeholder="Enter task description">
         <button type="button" onclick="createTask()">Create Task</button>
     </form>
+
+    <select id="taskSorter" onchange="sortTasks()">
+        <option value="checked">Checked</option>
+        <option value="unchecked">Unchecked</option>
+        <option value="created-asc">Created Ascending</option>
+        <option value="created-desc">Created Descending</option>
+    </select>
+
 
     <table id="taskTable">
         <thead>
@@ -52,4 +50,5 @@
     <!-- Scripts -->
     <script src="taskPageManager.js"></script>
 </body>
+
 </html>

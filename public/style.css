@@ -1,101 +1,70 @@
-* {
-    box-sizing: border-box;
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
     margin: 0;
     padding: 0;
-}
-
-html, body {
-    height: 100%;
-    font-family: 'Arial', sans-serif;
-    background-color: #f8f9fa;
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 100vh;
+}
+
+.error-message {
+    color: red;
+    font-size: 14px;
+    margin-bottom: 10px; /* Space between the error message and the first input field */
+    display: none; /* Hide by default */
 }
 
 .form-container {
-    display: flex;
-    flex-direction: column;
-    max-width: 340px;
-    width: 100%;
-    margin: 20px;
-    background: #ffffff;
+    background: #fff;
+    padding: 40px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px; /* Ensures uniform padding */
 }
 
 .form-box {
-    width: 100%;
-    padding: 20px;
     display: flex;
     flex-direction: column;
+    align-items: center; /* Centers the content */
 }
 
 h2 {
-    font-size: 22px;
+    font-size: 24px;
     color: #333;
     margin-bottom: 20px;
-    text-align: center;
+    text-align: center; /* Centers the header */
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"] {
-    width: 100%;
+input[type="user"], input[type="email"], input[type="password"] {
     padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
+    margin-bottom: 1px;
+    border: 2px solid #ccc;
     border-radius: 4px;
-    background-color: #fff;
-}
-
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus {
-    border-color: #0056b3;
-    outline: none;
-}
-
-.form-btn {
-    width: 100%;
-    padding: 10px 0;
-    margin-top: 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
     font-size: 16px;
-    background-color: #ff8c00;
-    color: #fff;
-    transition: background-color 0.2s ease-in-out;
+    display: block;
+    width: 92%; /* Ensures inputs and button are the same width */
 }
 
-.form-btn:hover {
-    background-color: #ff7000;
-}
-
-@media (max-width: 768px) {
-    .form-container {
-        margin: 10px;
-    }
-}
-
-
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-table, th, td {
-    border: 1px solid black;
-}
-
-th, td {
-    padding: 8px;
-    text-align: left;
-}
-
-button {
+.form-btn.active {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
     cursor: pointer;
+    border-radius: 4px;
+    width: 100%; /* Matches the width of input fields */
+}
+
+.signup-text, .login-text {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.signup-text a, .login-text a {
+    color: #4CAF50; /* Matches the button color */
+    text-decoration: none; /* Removes underline */
 }

@@ -8,12 +8,12 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("URL Params:", { list_id: listId, title: listTitle });
 
     if (listId && listTitle) {
-      document.getElementById(
-        "taskListTitle"
-      ).innerText = `Tasks for ${decodeURIComponent(
-        listTitle.replace(/\+/g, " ")
-      )}`;
-      loadTasks();
+      document.getElementById("taskListTitle").innerText = `Tasks for ${decodeURIComponent(listTitle.replace(/\+/g, " "))}`;
+
+      // Retrieve the stored sort option
+      const storedSortOption = localStorage.getItem('sortOption') || 'created-asc';
+      document.getElementById('taskSorter').value = storedSortOption;
+      loadTasks(storedSortOption);
     } else {
       throw new Error("Invalid task list ID or title.");
     }
@@ -28,8 +28,8 @@ function cleanResponseText(text) {
   return text.replace(/^[^({\[]*|[^)}\]]*$/g, "");
 }
 
-function loadTasks() {
-  const payload = { operation: "fetchAllTasks", list_id: listId };
+function loadTasks(sortOption = 'created-asc') {
+  const payload = { operation: "fetchAllTasks", list_id: listId, sort_option: sortOption };
   console.log("Sending payload:", payload);
 
   fetch("../api/tasks.php", {
@@ -53,48 +53,39 @@ function loadTasks() {
       updateErrorMessage("Failed to load tasks");
     });
 }
+
 function populateTaskTable(tasks) {
-  const taskTable = document
-    .getElementById("taskTable")
-    .getElementsByTagName("tbody")[0];
+  const taskTable = document.getElementById("taskTable").getElementsByTagName("tbody")[0];
   taskTable.innerHTML = "";
 
   if (Array.isArray(tasks)) {
     tasks.forEach((task) => {
       const row = taskTable.insertRow();
 
-      // Insert status cell first
       const statusCell = row.insertCell(0);
       const statusCheckbox = document.createElement("input");
       statusCheckbox.type = "checkbox";
-      statusCheckbox.checked = task.Status === 1; // Ensure Status is converted to boolean
-      statusCheckbox.addEventListener("change", () =>
-        updateTaskStatus(task.Task_ID, statusCheckbox.checked)
-      );
+      statusCheckbox.checked = task.Status === 1;
+      statusCheckbox.addEventListener("change", () => updateTaskStatus(task.Task_ID, statusCheckbox.checked));
       statusCell.appendChild(statusCheckbox);
       console.log("Status cell inserted:", statusCheckbox.checked);
 
-      // Insert name cell
       const nameCell = row.insertCell(1);
       nameCell.innerText = task.Name;
       console.log("Name cell inserted:", task.Name);
 
-      // Insert description cell
       const descriptionCell = row.insertCell(2);
       descriptionCell.innerText = task.Description;
       console.log("Description cell inserted:", task.Description);
 
-      // Insert actions cell
       const actionsCell = row.insertCell(3);
-      actionsCell.appendChild(
-        createButton("Update", () => updateTask(task.Task_ID))
-      );
-      actionsCell.appendChild(
-        createButton("Delete", () => deleteTask(task.Task_ID))
-      );
+      const actionDiv = document.createElement('div');
+      actionDiv.className = 'action-buttons';
+      actionDiv.appendChild(createButton("Update", () => updateTask(task.Task_ID)));
+      actionDiv.appendChild(createButton("Delete", () => deleteTask(task.Task_ID)));
+      actionsCell.appendChild(actionDiv);
       console.log("Actions cell inserted for task:", task.Task_ID);
 
-      // Log the entire row HTML for verification
       console.log("Row HTML:", row.innerHTML);
     });
   } else {
@@ -109,12 +100,7 @@ function createTask() {
     alert("Task list ID or task name is missing");
     return;
   }
-  const payload = {
-    operation: "createTask",
-    list_id: listId,
-    name,
-    description,
-  };
+  const payload = { operation: "createTask", list_id: listId, name, description };
   console.log("Sending payload:", payload);
 
   fetch("../api/tasks.php", {
@@ -129,7 +115,9 @@ function createTask() {
         const data = JSON.parse(cleanedText);
         alert(data.message);
         if (data.message === "Task created successfully.") {
-          loadTasks();
+          // Retrieve the current sort option and reload tasks with sorting
+          const sortOption = localStorage.getItem('sortOption') || 'created-asc';
+          loadTasks(sortOption);
         }
       } catch (error) {
         console.error("JSON Parse Error:", error, "Cleaned Text:", cleanedText);
@@ -146,12 +134,7 @@ function updateTask(taskId) {
   const newName = prompt("Enter the new name for the task:");
   const newDescription = prompt("Enter the new description for the task:");
   if (newName && newDescription) {
-    const payload = {
-      operation: "updateTask",
-      task_id: taskId,
-      name: newName.trim(),
-      description: newDescription.trim(),
-    };
+    const payload = { operation: "updateTask", task_id: taskId, name: newName.trim(), description: newDescription.trim() };
     console.log("Sending payload:", payload);
 
     fetch("../api/tasks.php", {
@@ -166,15 +149,11 @@ function updateTask(taskId) {
           const data = JSON.parse(cleanedText);
           alert(data.message);
           if (data.message === "Task updated successfully.") {
-            loadTasks();
+            const sortOption = localStorage.getItem('sortOption') || 'created-asc';
+            loadTasks(sortOption);
           }
         } catch (error) {
-          console.error(
-            "JSON Parse Error:",
-            error,
-            "Cleaned Text:",
-            cleanedText
-          );
+          console.error("JSON Parse Error:", error, "Cleaned Text:", cleanedText);
           updateErrorMessage("Failed to parse JSON response");
         }
       })
@@ -202,15 +181,11 @@ function deleteTask(taskId) {
           const data = JSON.parse(cleanedText);
           alert(data.message);
           if (data.message === "Task deleted successfully.") {
-            loadTasks();
+            const sortOption = localStorage.getItem('sortOption') || 'created-asc';
+            loadTasks(sortOption);
           }
         } catch (error) {
-          console.error(
-            "JSON Parse Error:",
-            error,
-            "Cleaned Text:",
-            cleanedText
-          );
+          console.error("JSON Parse Error:", error, "Cleaned Text:", cleanedText);
           updateErrorMessage("Failed to parse JSON response");
         }
       })
@@ -222,11 +197,7 @@ function deleteTask(taskId) {
 }
 
 function updateTaskStatus(taskId, status) {
-  const payload = {
-    operation: "updateTaskStatus",
-    task_id: taskId,
-    status: status ? 1 : 0,
-  };
+  const payload = { operation: "updateTaskStatus", task_id: taskId, status: status ? 1 : 0 };
   console.log("Sending payload:", payload, "Task ID:", taskId);
 
   fetch("../api/tasks.php", {
@@ -241,7 +212,9 @@ function updateTaskStatus(taskId, status) {
         const data = JSON.parse(cleanedText);
         alert(data.message);
         if (data.message === "Task status updated successfully.") {
-          loadTasks();
+          // Retrieve the current sort option and reload tasks with sorting
+          const sortOption = localStorage.getItem('sortOption') || 'created-asc';
+          loadTasks(sortOption);
         }
       } catch (error) {
         console.error("JSON Parse Error:", error, "Cleaned Text:", cleanedText);
@@ -268,4 +241,23 @@ function createButton(text, onclickFunction) {
   button.textContent = text;
   button.onclick = onclickFunction;
   return button;
+}
+
+function logOut() {
+  localStorage.removeItem('authToken');
+  window.location.href = 'index.html';
+}
+
+function goBack() {
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = 'index.html'; // Provide a fallback home page or directory
+  }
+}
+
+function sortTasks() {
+  let sortOption = document.getElementById('taskSorter').value;
+  localStorage.setItem('sortOption', sortOption); // Store the selected sort option
+  loadTasks(sortOption);
 }
