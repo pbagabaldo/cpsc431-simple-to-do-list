@@ -86,12 +86,16 @@ function populateTaskTable(tasks) {
 
       // Insert actions cell
       const actionsCell = row.insertCell(3);
-      actionsCell.appendChild(
+      const actionDiv = document.createElement('div');
+      actionDiv.className = 'action-buttons';
+      actionDiv.appendChild(
         createButton("Update", () => updateTask(task.Task_ID))
       );
-      actionsCell.appendChild(
+      actionDiv.appendChild(
         createButton("Delete", () => deleteTask(task.Task_ID))
       );
+
+      actionsCell.appendChild(actionDiv);
       console.log("Actions cell inserted for task:", task.Task_ID);
 
       // Log the entire row HTML for verification

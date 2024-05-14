@@ -10,15 +10,16 @@ body {
 
 h1 {
     color: #333;
+    margin-bottom: 20px;
 }
 
 #error-message {
     color: red;
-    margin: 10px 0;
+    margin-bottom: 20px;
 }
 
 form {
-    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 input[type="text"] {
@@ -26,21 +27,13 @@ input[type="text"] {
     margin-right: 10px;
     border: 2px solid #ccc;
     border-radius: 4px;
-    width: 250px;
+    width: 300px;
+
 }
 
-table td a {
-    color: #337ab7; /* Change color for better visibility */
-    text-decoration: none; /* Remove underline by default */
-    font-weight: bold;
-    display: block; /* Makes the link fill the cell for easier clicking */
-    padding: 8px; /* Adds padding to make it easier to click */
-    border-radius: 4px; /* Optional: Adds rounded corners */
-}
-
-table td a:hover {
-    background-color: #e8f4fc; /* Light blue background on hover */
-    cursor: pointer; /* Changes the cursor to a pointer */
+.action-buttons {
+    display: flex;
+    gap: 5px;
 }
 
 button {
@@ -53,13 +46,8 @@ button {
     border-radius: 4px;
 }
 
-.action-buttons {
-    display: flex;
-    gap: 5px;
-}
-
 table {
-    width: 80%;
+    width: 90%;
     border-collapse: collapse;
     margin-top: 20px;
     background: white;

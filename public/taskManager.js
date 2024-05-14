@@ -74,9 +74,13 @@ function loadTaskLists() {
                 link.href = `taskPage.html?list_id=${list.List_ID}&title=${encodeURIComponent(list.Title)}`;
                 link.textContent = list.Title;
                 titleCell.appendChild(link);
+
                 let actionsCell = row.insertCell(1);
-                actionsCell.appendChild(createButton("Update", () => updateTaskList(list.List_ID)));
-                actionsCell.appendChild(createButton("Delete", () => deleteTaskList(list.List_ID)));
+                let actionDiv = document.createElement('div');
+                actionDiv.className = 'action-buttons';
+                actionDiv.appendChild(createButton("Update", () => updateTaskList(list.List_ID)));
+                actionDiv.appendChild(createButton("Delete", () => deleteTaskList(list.List_ID)));
+                actionsCell.appendChild(actionDiv);
             });
         } else {
             console.log('No task lists found or invalid data:', data.message);
